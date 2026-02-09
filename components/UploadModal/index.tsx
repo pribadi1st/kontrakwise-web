@@ -123,7 +123,7 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto py-6">
           {/* Drop Zone */}
           <div className="border-2 border-dashed border-primary/30 rounded-xl bg-primary/5 p-12 flex flex-col items-center justify-center text-center group hover:border-primary hover:bg-primary/10 transition-all cursor-pointer relative">
             <input
@@ -201,7 +201,7 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
           </div>
         </div>
 
-        <DialogFooter className="px-8 py-6 border-t border-gray-200 bg-white flex items-center justify-end gap-3">
+        <DialogFooter className="py-4 border-t border-gray-200 bg-white flex items-center justify-end gap-3">
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
