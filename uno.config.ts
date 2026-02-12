@@ -26,10 +26,8 @@ export default defineConfig({
                 DEFAULT: '#18abf4',
                 surface: '#f1faff',
                 border: '#a5daf5',
-                hover: '#169ad9', // Adjusted to match design primary-hover
+                hover: '#169ad9',
             },
-            'text-main': '#1A237E',
-            'slate-text': '#64748B',
             neutral: {
                 DEFAULT: '#FFFFFF',
                 bg: '#F5F5F5', // Added for neutral-bg

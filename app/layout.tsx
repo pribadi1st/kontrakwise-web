@@ -4,6 +4,8 @@ import '@unocss/reset/tailwind.css';
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import QueryProvider from "@/components/QueryProvider";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,10 +34,13 @@ export default function RootLayout({
       >
         <TooltipProvider>
           <div className="flex h-screen">
-            <Sidebar />
-            <main className="flex-1 overflow-auto">
-              {children}
-            </main>
+            <QueryProvider>
+              <Sidebar />
+              <main className="flex-1 overflow-auto">
+                {children}
+              </main>
+              <Toaster position="top-center" />
+            </QueryProvider>
           </div>
         </TooltipProvider>
       </body>
