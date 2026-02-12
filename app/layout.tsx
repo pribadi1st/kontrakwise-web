@@ -2,10 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import '@unocss/reset/tailwind.css';
 import "./globals.css";
-import Sidebar from "@/components/Sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import QueryProvider from "@/components/QueryProvider";
-import { Toaster } from "@/components/ui/sonner";
+import AuthProvider from "@/components/AuthProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,13 +32,7 @@ export default function RootLayout({
       >
         <TooltipProvider>
           <div className="flex h-screen">
-            <QueryProvider>
-              <Sidebar />
-              <main className="flex-1 overflow-auto">
-                {children}
-              </main>
-              <Toaster position="top-center" />
-            </QueryProvider>
+            <AuthProvider children={children}></AuthProvider>
           </div>
         </TooltipProvider>
       </body>

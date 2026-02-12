@@ -81,7 +81,6 @@ function Sidebar() {
 
     const logOut = () => {
         // Handle logout logic here
-        console.log("Logging out...");
     };
 
     return (

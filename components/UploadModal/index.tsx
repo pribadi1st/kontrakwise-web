@@ -107,7 +107,6 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
   }
 
   const handleStartAnalysis = () => {
-    console.log('Starting analysis for files:', files.filter(f => f.status === 'completed'))
     onClose()
   }
 

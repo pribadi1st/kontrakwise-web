@@ -8,12 +8,6 @@ import RegisterForm from './RegisterForm'
 export default function LoginComponent() {
     const [isLogin, setIsLogin] = useState(true)
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault()
-        // Handle form submission logic here
-        console.log(isLogin ? 'Login submitted' : 'Register submitted')
-    }
-
     return (
         <AuthLayout
             title={isLogin ? 'Welcome Back' : 'Get Started'}
@@ -38,7 +32,7 @@ export default function LoginComponent() {
 
             {/* Form */}
             {isLogin ? (
-                <LoginForm onSubmit={handleSubmit} />
+                <LoginForm />
             ) : (
                 <RegisterForm />
             )}

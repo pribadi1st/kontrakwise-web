@@ -10,6 +10,7 @@ import { Field, FieldError, FieldLabel } from '../ui/field'
 import { FormRegister, registerAPI } from '@/utils/queries/login_register/query'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { Loader2 } from 'lucide-react'
 
 export default function RegisterForm() {
   const formSchema = zod.object({
@@ -28,7 +29,7 @@ export default function RegisterForm() {
   const { register, handleSubmit, formState: { errors } } = useForm<FormRegister>({
     resolver: zodResolver(formSchema),
   })
-  const { mutateAsync: registerUser } = useMutation({
+  const { mutateAsync: registerUser, isPending } = useMutation({
     mutationKey: ['register'],
     mutationFn: (formData: FormRegister) => registerAPI(formData)
   })
@@ -96,8 +97,13 @@ export default function RegisterForm() {
 
       {errorMessage && <p className="text-danger">{errorMessage}</p>}
 
-      <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-6">
-        Create Account
+      <Button
+        type="submit"
+        className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-6"
+        disabled={isPending}
+      >
+        {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        {isPending ? 'Creating Account...' : 'Create Account'}
       </Button>
 
       {/* <div className="relative my-8">
