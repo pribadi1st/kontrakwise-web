@@ -27,8 +27,12 @@ export default function LoginForm() {
     if (response.error) {
       setError(response.detail)
     } else {
+      // Save token to localStorage for client-side access
+      if (response.token) {
+        localStorage.setItem('bearer_token', response.token)
+      }
       toast.success('Login berhasil')
-      router.push('/documents')
+      router.refresh()
       setError(null)
     }
   }

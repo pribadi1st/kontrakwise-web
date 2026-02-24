@@ -17,15 +17,9 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Button } from '../ui/button'
-
-interface UploadFile {
-  id: string
-  name: string
-  size: string
-  progress: number
-  status: 'uploading' | 'completed' | 'error'
-  type: 'pdf' | 'docx'
-}
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { getDocumentTypes, uploadDocument } from '@/utils/queries/document/query'
+import { toast } from 'sonner'
 
 interface UploadModalProps {
   isOpen: boolean
@@ -33,57 +27,36 @@ interface UploadModalProps {
 }
 
 export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
-  const [files, setFiles] = useState<UploadFile[]>([
-    {
-      id: '1',
-      name: 'Partnership_Agreement.pdf',
-      size: '8.5 MB',
-      progress: 60,
-      status: 'uploading',
-      type: 'pdf'
-    },
-    {
-      id: '2',
-      name: 'NDA_Draft.docx',
-      size: '2.1 MB',
-      progress: 100,
-      status: 'completed',
-      type: 'docx'
-    }
-  ])
-  const [documentType, setDocumentType] = useState('')
+  const [files, setFiles] = useState<File[]>([])
+  const [selectedDocumentTypeId, setSelectedDocumentTypeId] = useState<number | null>(null)
+  const queryClient = useQueryClient()
+
+  // Fetch document types from API
+  const { data: documentTypes = [], isLoading: isLoadingTypes } = useQuery({
+    queryKey: ['document-types'],
+    queryFn: getDocumentTypes
+  })
+
+  // Upload mutation
+  const { mutateAsync: uploadDoc, isPending } = useMutation({
+    mutationFn: ({ file, documentTypeId, filename }: { file: File; documentTypeId: number; filename: string }) =>
+      uploadDocument(file, documentTypeId, filename),
+  })
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const uploadedFiles = event.target.files
     if (!uploadedFiles) return
 
-    const newFiles: UploadFile[] = Array.from(uploadedFiles).map((file, index) => ({
-      id: `file-${Date.now()}-${index}`,
-      name: file.name,
-      size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
-      progress: 0,
-      status: 'uploading' as const,
-      type: file.name.endsWith('.pdf') ? 'pdf' : 'docx'
-    }))
+    // const newFiles: UploadFile[] = Array.from(uploadedFiles).map((file, index) => ({
+    //   id: `file-${Date.now()}-${index}`,
+    //   name: file.name,
+    //   size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
+    //   progress: 0,
+    //   status: 'uploading' as const,
+    //   type: file.name.endsWith('.pdf') ? 'pdf' : 'docx'
+    // }))
 
-    setFiles(prev => [...prev, ...newFiles])
-
-    // Simulate upload progress
-    newFiles.forEach(file => {
-      const interval = setInterval(() => {
-        setFiles(prev => prev.map(f => {
-          if (f.id === file.id) {
-            const newProgress = Math.min(f.progress + Math.random() * 30, 100)
-            const newStatus = newProgress === 100 ? 'completed' : 'uploading'
-            return { ...f, progress: newProgress, status: newStatus }
-          }
-          return f
-        }))
-      }, 500)
-
-      // Clean up interval when complete
-      setTimeout(() => clearInterval(interval), 5000)
-    })
+    setFiles(prev => [...uploadedFiles])
   }
 
   const getFileIcon = (type: string) => {
@@ -93,21 +66,20 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
     return <File size={20} className="text-blue-600" />
   }
 
-  const getProgressColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-green-500'
-      case 'uploading':
-        return 'bg-primary'
-      case 'error':
-        return 'bg-red-500'
-      default:
-        return 'bg-gray-300'
+  const handleStartAnalysis = async () => {
+    // Refresh documents list
+    console.log(files[0])
+    const resp = await uploadDoc({
+      file: files[0],
+      documentTypeId: selectedDocumentTypeId!,
+      filename: files[0].name
+    })
+    if (resp) {
+      toast.success('Document uploaded successfully')
+      queryClient.invalidateQueries({ queryKey: ['documents'] })
+      setFiles([])
+      onClose()
     }
-  }
-
-  const handleStartAnalysis = () => {
-    onClose()
   }
 
   return (
@@ -127,7 +99,6 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
           <div className="border-2 border-dashed border-primary/30 rounded-xl bg-primary/5 p-12 flex flex-col items-center justify-center text-center group hover:border-primary hover:bg-primary/10 transition-all cursor-pointer relative">
             <input
               type="file"
-              multiple
               accept=".pdf,.docx"
               onChange={handleFileUpload}
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
@@ -145,38 +116,34 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
           </div>
 
           {/* Files List */}
-          {/* {files.length > 0 && (
+          {files.length > 0 && (
             <div className="mt-8">
               <h4 className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-4">
                 Files to be uploaded
               </h4>
               <div className="space-y-4">
                 {files.map((file) => (
-                  <div key={file.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                  <div key={file.name} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-3">
-                        {getFileIcon(file.type)}
+                        {getFileIcon(file.name.endsWith('.pdf') ? 'pdf' : 'docx')}
                         <span className="text-sm font-bold text-gray-900">{file.name}</span>
                       </div>
-                      {file.status === 'completed' ? (
+                      {/* {file.status === 'completed' ? (
                         <CheckCircle size={20} className="text-green-500" />
+                      ) : file.status === 'error' ? (
+                        <span className="text-xs font-bold text-red-500">Error</span>
                       ) : (
                         <span className="text-xs font-bold text-primary">
                           {Math.round(file.progress)}%
                         </span>
-                      )}
-                    </div>
-                    <div className="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all duration-300 ${getProgressColor(file.status)}`}
-                        style={{ width: `${file.progress}%` }}
-                      />
+                      )} */}
                     </div>
                   </div>
                 ))}
               </div>
             </div>
-          )} */}
+          )}
 
           {/* Document Type Selection */}
           <div className="mt-8 grid grid-cols-1 gap-6">
@@ -184,16 +151,26 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
               <label className="block text-sm font-bold text-gray-600 mb-2">
                 Document Type
               </label>
-              <Select value={documentType} onValueChange={setDocumentType}>
+              <Select value={selectedDocumentTypeId?.toString() || ''} onValueChange={(value) => setSelectedDocumentTypeId(parseInt(value))}>
                 <SelectTrigger className="w-full bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none">
                   <SelectValue placeholder="Select document type" />
                 </SelectTrigger>
                 <SelectContent className='bg-white'>
-                  <SelectItem value="nda">Non-Disclosure Agreement (NDA)</SelectItem>
-                  <SelectItem value="msa">Master Service Agreement (MSA)</SelectItem>
-                  <SelectItem value="sow">Statement of Work (SOW)</SelectItem>
-                  <SelectItem value="employment">Employment Contract</SelectItem>
-                  <SelectItem value="vendor">Vendor Agreement</SelectItem>
+                  {isLoadingTypes ? (
+                    <SelectItem value="loading" disabled>
+                      Loading document types...
+                    </SelectItem>
+                  ) : documentTypes.length > 0 ? (
+                    documentTypes.map((type) => (
+                      <SelectItem key={type.id} value={type.id.toString()}>
+                        {type.name}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="none" disabled>
+                      No document types available
+                    </SelectItem>
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -207,9 +184,10 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
 
           <Button
             onClick={handleStartAnalysis}
+            disabled={files.length === 0 || !selectedDocumentTypeId || isPending}
             className='text-white'
           >
-            Upload
+            {isPending ? 'Uploading...' : 'Upload'}
           </Button>
         </DialogFooter>
       </DialogContent>

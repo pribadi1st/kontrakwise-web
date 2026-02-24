@@ -6,3 +6,8 @@ export interface Document {
     riskLevel?: 'high' | 'medium' | 'low';
     status?: 'analyzed' | 'reviewing' | 'draft';
 }
+
+export interface DocumentType {
+    id: number
+    name: string
+}

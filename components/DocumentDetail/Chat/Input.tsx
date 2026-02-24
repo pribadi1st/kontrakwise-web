@@ -8,12 +8,12 @@ interface ChatInputProps {
     onQuickAction: (action: string) => void
 }
 
-export default function ChatInput({ 
-    inputMessage, 
-    onSendMessage, 
-    onInputChange, 
-    onKeyPress, 
-    onQuickAction 
+export default function ChatInput({
+    inputMessage,
+    onSendMessage,
+    onInputChange,
+    onKeyPress,
+    onQuickAction
 }: ChatInputProps) {
     return (
         <div className="p-4 border-t border-gray-200">
@@ -35,25 +35,25 @@ export default function ChatInput({
                 </button>
             </div>
             <div className="mt-2 flex flex-wrap gap-1">
-                <button 
+                <button
                     onClick={() => onQuickAction('summarize')}
                     className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs hover:bg-gray-200 transition-colors"
                 >
                     Summarize
                 </button>
-                <button 
+                <button
                     onClick={() => onQuickAction('risks')}
                     className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs hover:bg-gray-200 transition-colors"
                 >
                     Risks
                 </button>
-                <button 
+                <button
                     onClick={() => onQuickAction('key-terms')}
                     className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs hover:bg-gray-200 transition-colors"
                 >
                     Key terms
                 </button>
-                <button 
+                <button
                     onClick={() => onQuickAction('obligations')}
                     className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs hover:bg-gray-200 transition-colors"
                 >

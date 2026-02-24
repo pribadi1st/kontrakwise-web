@@ -1,8 +1,15 @@
+export interface Citation {
+    page: string
+    text: string
+}
+
 export interface Message {
     id: string
     text: string
     sender: 'user' | 'bot'
     timestamp: string
+    isStreaming?: boolean
+    citations?: Citation[]
 }
 
 export interface ChatProps {

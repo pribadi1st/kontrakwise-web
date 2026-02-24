@@ -1,17 +1,18 @@
-import { ArrowLeft, Download, FileText } from 'lucide-react'
+import { ArrowLeft, Download, FileText, Trash2 } from 'lucide-react'
 import { Document } from '@/types/document'
 
 interface DocumentDetailHeaderProps {
     document?: Document
     onBack?: () => void
     onDownload?: () => void
+    onDelete?: () => void
 }
 
-export default function DocumentDetailHeader({ document, onBack, onDownload }: DocumentDetailHeaderProps) {
+export default function DocumentDetailHeader({ document, onBack, onDownload, onDelete }: DocumentDetailHeaderProps) {
     return (
         <header className="h-16 border-b border-gray-200 bg-white flex items-center justify-between px-6 shrink-0">
             <div className="flex items-center gap-4">
-                <button 
+                <button
                     onClick={onBack}
                     className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
@@ -32,13 +33,22 @@ export default function DocumentDetailHeader({ document, onBack, onDownload }: D
                 </div>
             </div>
             <div className="flex items-center gap-3">
-                <button 
+                <button
                     onClick={onDownload}
                     className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors text-sm font-medium"
                 >
                     <Download size={18} />
                     Download
                 </button>
+                {onDelete && (
+                    <button
+                        onClick={onDelete}
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg border border-red-200 bg-white text-red-600 hover:bg-red-50 transition-colors text-sm font-medium"
+                    >
+                        <Trash2 size={18} />
+                        Delete
+                    </button>
+                )}
             </div>
         </header>
     )

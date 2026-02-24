@@ -2,9 +2,12 @@
 
 import { ColumnDef } from "@tanstack/react-table"
 import { Document } from "@/types/document"
-import { MoreHorizontal, FileText, File, CheckCircle, RefreshCw, Clock, Eye, Trash2 } from 'lucide-react'
+import { FileText, File, CheckCircle, RefreshCw, Clock, Eye, Trash2 } from 'lucide-react'
 import { DateConverter } from "@/utils/converter"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
+import Link from "next/link"
+import { useMutation } from '@tanstack/react-query'
+import { toast } from 'sonner'
 
 function getRiskColor(riskLevel: string) {
     switch (riskLevel) {
@@ -71,6 +74,33 @@ function getStatusIcon(status: string) {
 }
 
 export function getDocumentColumns(): ColumnDef<Document>[] {
+    const deleteMutation = useMutation({
+        mutationFn: async (documentId: number) => {
+            const token = localStorage.getItem('bearer_token')
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}documents/${documentId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+
+            if (!response.ok) {
+                throw new Error('Failed to delete document')
+            }
+
+            return response.json()
+        },
+        onSuccess: () => {
+            toast.success('Document deleted successfully')
+            // Refresh the documents list
+            window.location.reload()
+        },
+        onError: (error: any) => {
+            toast.error('Failed to delete document')
+            console.error('Delete error:', error)
+        }
+    })
+
     return [
         {
             id: "filename",
@@ -84,9 +114,11 @@ export function getDocumentColumns(): ColumnDef<Document>[] {
                             {getFileIcon(doc.type || '', doc.riskLevel || '')}
                         </div>
                         <div>
-                            <p className="text-gray-900 text-sm font-bold group-hover:text-primary transition-colors cursor-pointer">
-                                {doc.filename}
-                            </p>
+                            <Link href={`/documents/${doc.id}`}>
+                                <p className="text-gray-900 text-sm font-bold group-hover:text-primary transition-colors cursor-pointer">
+                                    {doc.filename}
+                                </p>
+                            </Link>
                         </div>
                     </div>
                 )
@@ -101,70 +133,36 @@ export function getDocumentColumns(): ColumnDef<Document>[] {
                 return <span className="text-sm text-gray-600">{DateConverter(created_at)}</span>
             }
         },
-        // {
-        //     id: "type",
-        //     accessorKey: "type",
-        //     header: "Type",
-        //     cell: ({ row }) => {
-        //         const { type } = row.original
-        //         return (
-        //             <span className={`px-2.5 py-1 rounded-md text-xs font-bold border ${getTypeColor(type)}`}>
-        //                 {type}
-        //             </span>
-        //         )
-        //     }
-        // },
-        // {
-        //     id: "riskLevel",
-        //     accessorKey: "riskLevel",
-        //     header: "Risk Level",
-        //     cell: ({ row }) => {
-        //         const { riskLevel } = row.original
-        //         return (
-        //             <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${getRiskColor(riskLevel)}`}>
-        //                 <span className={`w-1.5 h-1.5 rounded-full ${getRiskDotColor(riskLevel)}`}></span>
-        //                 {riskLevel.charAt(0).toUpperCase() + riskLevel.slice(1)}
-        //             </div>
-        //         )
-        //     }
-        // },
-        // {
-        //     id: "status",
-        //     accessorKey: "status",
-        //     header: "Status",
-        //     cell: ({ row }) => {
-        //         const { status } = row.original
-        //         return (
-        //             <div className="flex items-center gap-1.5 text-sm font-medium">
-        //                 {getStatusIcon(status)}
-        //                 <span className={status === 'analyzed' ? 'text-primary' : 'text-gray-500'}>
-        //                     {status.charAt(0).toUpperCase() + status.slice(1)}
-        //                 </span>
-        //             </div>
-        //         )
-        //     }
-        // },
         {
             id: "actions",
             accessorKey: "actions",
             header: "Actions",
-            cell: () => {
+            cell: ({ row }) => {
+                const doc = row.original
                 return (
                     <div className="text-right flex gap-2">
                         <Tooltip>
                             <TooltipTrigger>
-                                <Eye size={20} className="text-primary" />
+                                <Link href={`/documents/${doc.id}`}>
+                                    <Eye size={20} className="text-primary" />
+                                </Link>
                             </TooltipTrigger>
                             <TooltipContent className='bg-primary [&_svg]:bg-primary [&_svg]:fill-primary text-white'>
                                 <p>View Document</p>
                             </TooltipContent>
                         </Tooltip>
                         <Tooltip>
-                            <TooltipTrigger>
-                                <Trash2 size={20} className="text-danger" />
+                            <TooltipTrigger asChild>
+                                <button
+                                    onClick={() => deleteMutation.mutate(doc.id)}
+                                    disabled={deleteMutation.isPending}
+                                    className="text-red-500 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                >
+                                    <Trash2 size={20} />
+                                </button>
                             </TooltipTrigger>
                             <TooltipContent className='bg-danger [&_svg]:bg-danger [&_svg]:fill-danger text-white'>
-                                <p>Delete Document</p>
+                                <p>{deleteMutation.isPending ? 'Deleting...' : 'Delete Document'}</p>
                             </TooltipContent>
                         </Tooltip>
                     </div>

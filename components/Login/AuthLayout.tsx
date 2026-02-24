@@ -13,7 +13,7 @@ interface AuthLayoutProps {
 
 export default function AuthLayout({ children, title, subtitle, showMobileLogo = false }: AuthLayoutProps) {
   return (
-    <div className="w-full h-screen flex flex-col md:flex-row overflow-hidden font-display">
+    <div className="w-full h-screen flex flex md:flex-row overflow-hidden font-display">
       {/* Left Section - Hero (Desktop only) */}
       <div className="hidden md:flex w-[40%] bg-text-main relative flex-col justify-between p-12 text-white">
         <div className="absolute inset-0 z-0">

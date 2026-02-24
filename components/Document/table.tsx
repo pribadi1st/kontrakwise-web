@@ -1,7 +1,7 @@
 "use client"
 
 import { ColumnDef, getCoreRowModel, useReactTable, flexRender } from "@tanstack/react-table"
-import { MoreHorizontal, FileText, File, CheckCircle, RefreshCw, Clock } from 'lucide-react'
+import { FileText, File, CheckCircle, RefreshCw, Clock } from 'lucide-react'
 import { Document } from "@/types/document"
 
 interface DocumentTableProps {

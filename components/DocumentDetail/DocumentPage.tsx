@@ -2,7 +2,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Document } from '@/types/document'
-import { Message } from '@/components/DocumentDetail/Chat/types'
 import {
     DocumentDetailHeader,
     DocumentDetailMetadata,
@@ -11,6 +10,7 @@ import {
 } from '@/components/DocumentDetail'
 import { useQuery } from '@tanstack/react-query'
 import { internalGetDocumentsDetail } from '@/utils/queries/document/query'
+import { useStreamingChat } from '@/hooks/useStreamingChat'
 
 interface DocumentDetailClientProps {
     document: Document
@@ -31,19 +31,14 @@ export default function DocumentDetailClient({ document }: DocumentDetailClientP
             data: pdfBlob ? `Blob received (${pdfBlob.size} bytes)` : 'No blob',
             documentId: document.id
         })
-    }, [isLoading, error, pdfBlob])
-    const [messages, setMessages] = useState<Message[]>([
-        {
-            id: '1',
-            text: 'Hello! I\'m your contract analysis assistant. I can help you understand this document, answer questions about specific clauses, identify potential risks, and explain legal terminology. What would you like to know?',
-            sender: 'bot',
-            timestamp: new Date().toISOString()
-        }
-    ])
+    }, [isLoading, error, pdfBlob, document.id])
+
     const [inputMessage, setInputMessage] = useState('')
-    const [isTyping, setIsTyping] = useState(false)
     const [isChatExpanded, setIsChatExpanded] = useState(false)
     const messagesEndRef = useRef<HTMLDivElement>(null)
+
+    // Use streaming chat hook
+    const { messages, isStreaming, sendMessage, deleteDocument } = useStreamingChat(document.id)
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -56,47 +51,31 @@ export default function DocumentDetailClient({ document }: DocumentDetailClientP
     const handleSendMessage = async () => {
         if (!inputMessage.trim()) return
 
-        const userMessage: Message = {
-            id: Date.now().toString(),
-            text: inputMessage,
-            sender: 'user',
-            timestamp: new Date()
-        }
-
-        setMessages(prev => [...prev, userMessage])
+        await sendMessage(inputMessage)
         setInputMessage('')
-        setIsTyping(true)
-
-        // Simulate bot response
-        setTimeout(() => {
-            const botMessage: Message = {
-                id: (Date.now() + 1).toString(),
-                text: 'I\'m analyzing your question about the document. Based on the contract terms I can see, this appears to be a standard agreement with typical clauses around liability, termination, and payment terms. Would you like me to highlight any specific areas of concern?',
-                sender: 'bot',
-                timestamp: new Date()
-            }
-            setMessages(prev => [...prev, botMessage])
-            setIsTyping(false)
-        }, 1500)
     }
 
     const handleKeyPress = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault()
             handleSendMessage()
+            setInputMessage('')
         }
     }
 
     const handleQuickAction = (action: string) => {
-        const actionMessages = {
+        const actionMessages: Record<string, string> = {
             'summarize': 'Please provide a summary of this contract.',
             'risks': 'What are the main risks in this contract?',
             'key-terms': 'What are the key terms and definitions in this contract?',
             'obligations': 'What are the main obligations for each party?'
         }
 
-        setInputMessage(actionMessages[action] || '')
-        handleSendMessage()
+        const message = actionMessages[action]
+        if (message) {
+            setInputMessage(message)
+            handleSendMessage()
+        }
     }
 
     const handleBack = () => {
@@ -116,16 +95,17 @@ export default function DocumentDetailClient({ document }: DocumentDetailClientP
                     document={document}
                     onBack={handleBack}
                     onDownload={handleDownload}
+                    onDelete={deleteDocument}
                 />
                 <DocumentDetailMetadata document={document} />
-                <DocumentDetailContent pdfBlob={pdfBlob} isLoading={isLoading} error={error} />
+                <DocumentDetailContent pdfBlob={pdfBlob} isLoading={isLoading} error={error || undefined} />
             </div>
 
             {/* Chat Sidebar */}
             <Chat
                 messages={messages}
                 inputMessage={inputMessage}
-                isTyping={isTyping}
+                isTyping={isStreaming}
                 isChatExpanded={isChatExpanded}
                 onSendMessage={handleSendMessage}
                 onInputChange={setInputMessage}

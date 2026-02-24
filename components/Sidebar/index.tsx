@@ -7,13 +7,13 @@ import {
     Settings,
     BookOpen,
     PanelLeftClose,
-    PanelLeftOpen,
-    LogOut
+    PanelLeftOpen
 } from 'lucide-react';
 import { useState } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import Image from 'next/image';
+import LogoutButton from '@/components/LogoutButton';
 
 interface SidebarItem {
     text: string;
@@ -73,15 +73,12 @@ function Sidebar() {
         { text: "Documents", value: "/documents", icon: <FileText size={20} /> },
         // { text: "Clients", value: "/clients", icon: <Users size={20} /> },
         { text: "Knowledge Base", value: "/knowledge", icon: <BookOpen size={20} /> },
+        { text: "Document Types", value: "/settings/document-types", icon: <Settings size={20} /> },
         { text: "Settings", value: "/settings", icon: <Settings size={20} /> }
     ];
 
     const username = "User";
     const avatarFallback = username.slice(0, 2).toUpperCase();
-
-    const logOut = () => {
-        // Handle logout logic here
-    };
 
     return (
         <div
@@ -154,11 +151,14 @@ function Sidebar() {
                         )}
                     </div>
                     <div className='flex items-end'>
-                        <LogOut
-                            size={16}
-                            onClick={logOut}
-                            className='text-red-500 hover:text-danger cursor-pointer'
-                        />
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <LogoutButton />
+                            </TooltipTrigger>
+                            <TooltipContent className='bg-primary [&_svg]:bg-primary [&_svg]:fill-primary text-white'>
+                                <p>Logout</p>
+                            </TooltipContent>
+                        </Tooltip>
                     </div>
                 </div>
             </div>

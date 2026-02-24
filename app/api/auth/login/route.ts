@@ -9,6 +9,7 @@ export async function POST(req: NextRequest) {
     if (response.error) {
         return NextResponse.json(response, { status: 401 })
     }
+
     const session = await cookies()
     session.set("bearer_token", response.detail.access_token, {
         httpOnly: true,
@@ -16,5 +17,10 @@ export async function POST(req: NextRequest) {
         sameSite: "strict",
         maxAge: 60 * 60 * 24 * 7
     })
-    return Response.json(response)
+
+    // Return token in response for localStorage storage
+    return NextResponse.json({
+        ...response,
+        token: response.detail.access_token
+    })
 }

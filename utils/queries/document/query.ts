@@ -1,3 +1,4 @@
+import { DocumentType } from "@/types/document"
 import { API_BASE_URL } from "../base"
 
 export const getDocuments = async (token: string) => {
@@ -14,6 +15,45 @@ export const internalGetDocuments = async () => {
     const response = await fetch(`/api/documents`)
     const data = await response.json()
     return data
+}
+
+export const getDocumentTypes = async (): Promise<DocumentType[]> => {
+    const token = localStorage.getItem('bearer_token')
+    const response = await fetch(`${API_BASE_URL}document-types/`, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch document types')
+    }
+
+    return response.json()
+}
+
+export const uploadDocument = async (file: File, documentTypeId: number, filename?: string): Promise<any> => {
+    const token = localStorage.getItem('bearer_token')
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('document_type_id', documentTypeId.toString())
+    if (filename) {
+        formData.append('filename', filename)
+    }
+
+    const response = await fetch(`${API_BASE_URL}documents/upload`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        },
+        body: formData
+    })
+
+    if (!response.ok) {
+        throw new Error('Failed to upload document')
+    }
+
+    return response.json()
 }
 
 export const getDocumentFile = async (token: string, document_id: string) => {
