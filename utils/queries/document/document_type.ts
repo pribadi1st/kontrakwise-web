@@ -1,3 +1,6 @@
+import { FormDocumentType } from "@/types/document"
+import { id } from "zod/locales"
+
 export const getDocumentTypes = async (): Promise<DocumentType[]> => {
     const token = localStorage.getItem('bearer_token')
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}document-types/`, {
@@ -13,7 +16,7 @@ export const getDocumentTypes = async (): Promise<DocumentType[]> => {
     return response.json()
 }
 
-export const createDocumentType = async (name: string): Promise<DocumentType> => {
+export const createDocumentType = async (form: FormDocumentType): Promise<DocumentType> => {
     const token = localStorage.getItem('bearer_token')
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}document-types/`, {
         method: 'POST',
@@ -21,11 +24,29 @@ export const createDocumentType = async (name: string): Promise<DocumentType> =>
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ name })
+        body: JSON.stringify(form)
     })
 
     if (!response.ok) {
         throw new Error('Failed to create document type')
+    }
+
+    return response.json()
+}
+
+export const updateDocumentType = async (data: Partial<FormDocumentType>): Promise<DocumentType> => {
+    const token = localStorage.getItem('bearer_token')
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}document-types/${data.id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(data)
+    })
+
+    if (!response.ok) {
+        throw new Error('Failed to update document type')
     }
 
     return response.json()

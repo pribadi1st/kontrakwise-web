@@ -6,11 +6,12 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Field, FieldDescription, FieldLabel } from '@/components/ui/field'
-import { createDocumentType } from '@/utils/queries/document/document_type'
+import { createDocumentType, updateDocumentType } from '@/utils/queries/document/document_type'
 import { DocumentType, FormDocumentType, RiskRule } from '@/types/document'
 import { useForm, useFieldArray, useWatch } from 'react-hook-form'
 import { documentTypeSchema } from '@/utils/schemas/documentType'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useMemo } from 'react'
 
 interface DocumentTypeEditorProps {
     documentType?: DocumentType | null
@@ -24,11 +25,15 @@ export default function DocumentTypeEditor({ documentType, onCancel, mode }: Doc
     const { register, handleSubmit, formState: { errors }, control } = useForm<FormDocumentType>({
         resolver: zodResolver(documentTypeSchema),
         defaultValues: {
+            id: documentType?.id,
             name: documentType?.name || '',
             description: documentType?.description || '',
             risk_rules: documentType?.risk_rules || []
         }
     })
+
+    // Register id field for edit mode
+    register('id')
 
     const riskRules = useWatch({ control, name: 'risk_rules' })
 
@@ -59,17 +64,12 @@ export default function DocumentTypeEditor({ documentType, onCancel, mode }: Doc
 
     const queryClient = useQueryClient()
 
-    const createMutation = useMutation({
-        mutationFn: createDocumentType,
-        onSuccess: (data: any) => {
-            toast.success('Document type created successfully')
-            queryClient.invalidateQueries({ queryKey: ['document-types'] })
-            onCancel()
-        },
-        onError: (error: any) => {
-            toast.error('Failed to create document type')
-            console.error(error)
-        }
+    const { mutateAsync: createMutation, isPending: isCreating } = useMutation({
+        mutationFn: (form: FormDocumentType) => createDocumentType(form),
+    })
+
+    const { mutateAsync: updateDocTypeMutation, isPending: isUpdating } = useMutation({
+        mutationFn: (formData: FormDocumentType) => updateDocumentType(formData),
     })
 
     const addRiskRule = () => {
@@ -93,15 +93,29 @@ export default function DocumentTypeEditor({ documentType, onCancel, mode }: Doc
     }
 
     const submitForm = async (data: FormDocumentType) => {
-        console.log(data)
-        // if (mode === 'create') {
-        //     createMutation.mutate(data as any)
-        // } else {
-        //     toast.info('Update functionality coming soon')
-        // }
+        if (mode === 'edit') {
+            const response = await updateDocTypeMutation(data)
+            if (!!response) {
+                toast.success('Document type updated successfully')
+                queryClient.invalidateQueries({ queryKey: ['document-types'] })
+                onCancel()
+            }
+            return
+        }
+        else if (mode === 'create') {
+            const response = await createMutation(data)
+            if (!!response) {
+                toast.success('Document type created successfully')
+                queryClient.invalidateQueries({ queryKey: ['document-types'] })
+                onCancel()
+            }
+            return
+        }
     }
 
-    const isPending = createMutation.isPending
+    const isPending = useMemo(() => {
+        return isCreating || isUpdating
+    }, [isCreating, isUpdating])
 
     return (
         <form className="flex flex-col h-full bg-surface-light" onSubmit={handleSubmit(submitForm)}>
@@ -155,7 +169,7 @@ export default function DocumentTypeEditor({ documentType, onCancel, mode }: Doc
                         </div>
 
                         {/* AI Training Info */}
-                        <div className="bg-primary-light/50 border border-primary/20 rounded-xl p-6">
+                        <div className="bg-primary-surface border border-primary-border rounded px-1 py-3">
                             <div className="flex gap-3">
                                 <Lightbulb size={20} className="text-primary" />
                                 <div>

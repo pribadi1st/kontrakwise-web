@@ -1,8 +1,8 @@
 import zod from "zod";
 
-
 const severityLevel = zod.enum(["low", "medium", "high"])
 export const documentTypeSchema = zod.object({
+    id: zod.number().optional(),
     name: zod.string("Name is required").min(1, "Name cannot be empty"),
     description: zod.string("Description is required").min(1, "Description cannot be empty"),
     risk_rules: zod.array(

@@ -15,6 +15,7 @@ export interface DocumentType {
 }
 
 export interface FormDocumentType {
+    id?: number
     name: string
     description: string
     risk_rules?: RiskRule[]
