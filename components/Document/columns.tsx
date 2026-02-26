@@ -134,6 +134,52 @@ export function getDocumentColumns(): ColumnDef<Document>[] {
             }
         },
         {
+            id: "ai_progress",
+            accessorKey: "ai_progress",
+            header: "Document processing",
+            cell: ({ row }) => {
+                const { ai_progress } = row.original
+                const progress = ai_progress?.toLowerCase() || 'pending'
+
+                const getProgressColor = (status: string) => {
+                    switch (status) {
+                        case 'completed':
+                            return 'bg-success-surface text-success border-success'
+                        case 'analyzing':
+                            return 'bg-warning-surface text-warning border-warning'
+                        case 'extracting':
+                            return 'bg-blue-surface text-blue border-blue'
+                        case 'pending':
+                        default:
+                            return 'bg-gray-50 text-gray-600 border-gray-100'
+                    }
+                }
+
+                const getProgressIcon = (status: string) => {
+                    switch (status) {
+                        case 'completed':
+                            return <CheckCircle size={16} className="text-success" />
+                        case 'analyzing':
+                            return <RefreshCw size={16} className="animate-spin text-warning" />
+                        case 'extracting':
+                            return <RefreshCw size={16} className="animate-spin text-blue" />
+                        case 'pending':
+                        default:
+                            return <Clock size={16} className="text-gray-500" />
+                    }
+                }
+
+                return (
+                    <div className="flex items-center gap-2">
+                        {getProgressIcon(progress)}
+                        <span className={`text-xs px-2 py-1 rounded-full border ${getProgressColor(progress)}`}>
+                            {progress.charAt(0).toUpperCase() + progress.slice(1)}
+                        </span>
+                    </div>
+                )
+            }
+        },
+        {
             id: "actions",
             accessorKey: "actions",
             header: "Actions",

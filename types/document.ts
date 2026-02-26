@@ -2,6 +2,9 @@ export interface Document {
     id: number;
     filename: string;
     created_at: string;
+    ai_progress: string;
+    summary?: string;
+    document_type: DocumentType;
     type?: string;
     riskLevel?: 'high' | 'medium' | 'low';
     status?: 'analyzed' | 'reviewing' | 'draft';
