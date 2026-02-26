@@ -6,7 +6,8 @@ export interface Document {
     summary?: string;
     document_type: DocumentType;
     type?: string;
-    riskLevel?: 'high' | 'medium' | 'low';
+    risk_level?: 'high' | 'medium' | 'low';
+    risk_reasoning?: string;
     status?: 'analyzed' | 'reviewing' | 'draft';
 }
 

@@ -79,12 +79,7 @@ export default function DocumentDetailClient({ document }: DocumentDetailClientP
     }
 
     const handleBack = () => {
-        router.push('/documents')
-    }
-
-    const handleDownload = () => {
-        // Implement download functionality
-        console.log('Download document:', document.id)
+        router.back()
     }
 
     return (
