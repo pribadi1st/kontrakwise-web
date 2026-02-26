@@ -94,8 +94,6 @@ export default function DocumentDetailClient({ document }: DocumentDetailClientP
                 <DocumentDetailHeader
                     document={document}
                     onBack={handleBack}
-                    onDownload={handleDownload}
-                    onDelete={deleteDocument}
                 />
                 <DocumentDetailMetadata document={document} />
                 <DocumentDetailContent pdfBlob={pdfBlob} isLoading={isLoading} error={error || undefined} />

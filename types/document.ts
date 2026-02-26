@@ -10,4 +10,19 @@ export interface Document {
 export interface DocumentType {
     id: number
     name: string
+    description?: string
+    risk_rules?: RiskRule[]
+}
+
+export interface FormDocumentType {
+    name: string
+    description: string
+    risk_rules?: RiskRule[]
+}
+
+export interface RiskRule {
+    id?: number
+    clause: string
+    severity: 'high' | 'medium' | 'low'
+    criteria: string
 }

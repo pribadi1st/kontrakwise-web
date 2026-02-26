@@ -13,11 +13,6 @@ export interface FormLogin {
     password: string
 }
 
-export const loginSchema = zod.object({
-    email: zod.string().email(),
-    password: zod.string().min(8),
-})
-
 export const loginAPIInternal = async (formData: FormLogin) => {
     const response = await fetch(`${API_BASE_URL}users/login`, {
         method: "POST",

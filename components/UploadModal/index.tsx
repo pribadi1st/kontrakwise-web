@@ -72,7 +72,7 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
     const resp = await uploadDoc({
       file: files[0],
       documentTypeId: selectedDocumentTypeId!,
-      filename: files[0].name
+      filename: files[0].name.replace(/\.[^/.]+$/, "")
     })
     if (resp) {
       toast.success('Document uploaded successfully')
