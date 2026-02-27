@@ -3,7 +3,7 @@ import Link from 'next/link';
 import {
     LayoutDashboard,
     FileText,
-    Users,
+    Workflow,
     Settings,
     BookOpen,
     PanelLeftClose,
@@ -72,8 +72,8 @@ function Sidebar() {
         { text: "Dashboard", value: "/dashboard", icon: <LayoutDashboard size={20} /> },
         { text: "Documents", value: "/documents", icon: <FileText size={20} /> },
         // { text: "Clients", value: "/clients", icon: <Users size={20} /> },
-        { text: "Knowledge Base", value: "/knowledge", icon: <BookOpen size={20} /> },
-        { text: "Document Types", value: "/settings/document-types", icon: <Settings size={20} /> },
+        { text: "AI Flow", value: "/ai-flows", icon: <Workflow size={20} /> },
+        { text: "Knowledge and Rule", value: "/settings/document-types", icon: <BookOpen size={20} /> },
         { text: "Settings", value: "/settings", icon: <Settings size={20} /> }
     ];
 
