@@ -9,7 +9,7 @@ import { NODE_LIST, NodeInterface } from './Drawer/constant';
 import { uuidv7 } from 'uuidv7';
 import { DynamicIcon } from 'lucide-react/dynamic';
 import '@xyflow/react/dist/style.css';
-import { CustomNodeType, initialNodes, nodeTypes } from './Nodes';
+import { initialNodes, nodeTypes } from './Nodes';
 
 function AIComponentPageWrapper() {
     return (
@@ -20,9 +20,9 @@ function AIComponentPageWrapper() {
 }
 
 function AIComponentPage() {
-    const [nodes, setNodes] = useNodesState<CustomNodeType>(initialNodes);
+    const [nodes, setNodes] = useNodesState(initialNodes);
     const [edges, setEdges] = useEdgesState([]);
-    const { screenToFlowPosition } = useReactFlow();
+    const { screenToFlowPosition, updateNodeData } = useReactFlow();
     const nodeCategories = NODE_LIST();
 
     const onNodesChange = useCallback(
@@ -64,17 +64,15 @@ function AIComponentPage() {
             });
             const newId = uuidv7();
 
-            const newNode: CustomNodeType = {
+            const newNode = {
                 id: newId,
                 type: jsonType.type,
                 position,
-                data: { label: jsonType.type.charAt(0).toUpperCase() + jsonType.type.slice(1) },
+                data: {
+                    label: jsonType.label,
+                },
+                ...(jsonType.width && { width: jsonType.width }),
             };
-            console.log(jsonType)
-
-            if (!!jsonType.width) {
-                newNode.width = jsonType.width;
-            }
             setNodes((nds) => nds.concat(newNode));
         },
         [setNodes, screenToFlowPosition],

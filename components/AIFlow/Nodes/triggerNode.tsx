@@ -1,17 +1,13 @@
 import { Handle, Position } from "@xyflow/react"
-import type { Node, NodeProps } from "@xyflow/react";
+import type { NodeProps, Node } from "@xyflow/react";
 import { Zap } from "lucide-react";
+import { CustomNodeType, BaseNodeData } from "./index";
 
-export type TriggerNodeData = {
-    lable: string;
-    description: string;
-}
+export type TriggerNodeData = BaseNodeData
 
-export type TriggerNode = Node & {
-    type: "trigger";
-};
+export type TriggerNode = Node<TriggerNodeData>
 
-export function TriggerNodeComponent({ isConnectable }: NodeProps<TriggerNode>) {
+export function TriggerNodeComponent({ data, isConnectable }: NodeProps<TriggerNode>) {
     return (
         <div className="flex flex-col border border-primary-border rounded">
             <div className="flex items-center gap-2 bg-primary-surface p-4">

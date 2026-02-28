@@ -3,22 +3,50 @@ import type { BuiltInNode, Node, NodeTypes } from "@xyflow/react";
 //     type PositionLoggerNode as PositionLoggerNodeType,
 // } from "./PositionLoggerNode";
 import { TriggerNodeComponent } from "./triggerNode";
-import { DocumentNodeComponent } from "./documentNode";
-import { AiAnalyzeNodeComponent } from "./aiAnalyzeNode";
-import { DecisionNodeComponent } from "./decisionNode";
+import { DocumentNodeComponent, DocumentNodeData } from "./documentNode";
+import { AiAnalyzeNodeComponent, AiAnalyzeNodeData } from "./aiAnalyzeNode";
+import { DecisionNodeComponent, DecisionNodeData } from "./decisionNode";
+import { ExtractDocumentNodeComponent, ExtractDocumentNodeData } from "./extractDocumentNode";
+import { uuidv7 } from 'uuidv7'
 
-export const initialNodes = [] satisfies Node[];
+export const initialNodes = [
+    {
+        id: "initialTrigger",
+        position: { x: 0, y: 0 },
+        type: "trigger",
+        data: {
+            label: 'Start'
+        }
+    },
+    {
+        id: "initialDocumentSelection",
+        position: { x: -30, y: 250 },
+        type: "document",
+        data: {
+            label: 'Document Selection'
+        },
+        width: 300
+    }
+] satisfies Node[];
 
-export type CustomType = "group" | "input" | "output" | "default" | "trigger" | "document" | "ai-analyze" | "decision";
+export type CustomType = "group" | "input" | "output" | "default" | "trigger" | "document" | "ai-analyze" | "decision" | "extract-document";
 
 export const nodeTypes = {
     "trigger": TriggerNodeComponent,
     "document": DocumentNodeComponent,
     "ai-analyze": AiAnalyzeNodeComponent,
     "decision": DecisionNodeComponent,
+    "extract-document": ExtractDocumentNodeComponent,
 } satisfies NodeTypes;
 
+export type BaseNodeData = {
+    label: string;
+}
+
 // Append the types of you custom edges to the BuiltInNode type
-export type CustomNodeType = Omit<BuiltInNode, 'type'> & {
-    type: CustomType;
-} 
+// export type CustomNodeType = Omit<BuiltInNode, 'type' | 'data'> & {
+//     type: CustomType;
+//     data: BaseNodeData;
+// } 
+
+export type CustomNodeType = BuiltInNode | DocumentNodeData | DecisionNodeData | AiAnalyzeNodeData | ExtractDocumentNodeData

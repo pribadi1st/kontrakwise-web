@@ -1,5 +1,5 @@
 import { IconName } from "lucide-react/dynamic";
-import { CustomType } from "../Nodes";
+import { CustomNodeType } from "../Nodes";
 
 
 interface CategoryInterface {
@@ -9,7 +9,7 @@ interface CategoryInterface {
 }
 
 export interface NodeInterface {
-    type: CustomType;
+    type: string;
     label: string;
     icon: IconName;
     description: string;
@@ -56,6 +56,13 @@ export function NODE_LIST() {
                     label: 'Select Document',
                     icon: "file-text",
                     description: 'Select and process documents',
+                    width: 300
+                },
+                {
+                    type: 'extract-document',
+                    label: 'Extract Information',
+                    icon: "download",
+                    description: 'Extract information from document',
                     width: 300
                 }
             ]

@@ -1,18 +1,28 @@
-import { Handle, Position } from "@xyflow/react"
-import type { Node, NodeProps } from "@xyflow/react";
+import { Handle, Position, useReactFlow } from "@xyflow/react"
+import type { NodeProps, Node } from "@xyflow/react";
 import { Split, Settings } from "lucide-react";
+import { useCallback } from 'react';
+import { CustomNodeType, BaseNodeData } from "./index";
 
-export type DecisionNodeData = {
-    label: string;
-    description: string;
-    condition: string;
+export type DecisionNodeData = BaseNodeData & {
+    description?: string;
+    condition?: string;
     trueLabel?: string;
     falseLabel?: string;
 }
 
 export type DecisionNode = Node<DecisionNodeData>
 
-export function DecisionNodeComponent({ data, isConnectable }: NodeProps<DecisionNode>) {
+export function DecisionNodeComponent({ id, data, isConnectable }: NodeProps<DecisionNode>) {
+    const { updateNodeData } = useReactFlow();
+
+    const handleSettingsClick = useCallback(() => {
+        // Create a custom event that can be handled by the parent component
+        const event = new CustomEvent('nodeSettingsClick', {
+            detail: { nodeId: id }
+        });
+        window.dispatchEvent(event);
+    }, [id]);
     return (
         <div className="flex flex-col border border-primary-border rounded">
             <div className="flex-between items-center bg-primary-surface p-4">
@@ -20,7 +30,7 @@ export function DecisionNodeComponent({ data, isConnectable }: NodeProps<Decisio
                     <Split className="w-4 h-4 text-primary" />
                     <div className="font-medium text-sm">Decision Tree</div>
                 </div>
-                <Settings className="text-primary cursor-pointer" size={16} />
+                <Settings className="text-primary cursor-pointer" size={16} onClick={handleSettingsClick} />
             </div>
             <div className="flex p-4 flex-col bg-white gap-2">
                 <div className="font-medium text-sm">Condition</div>
