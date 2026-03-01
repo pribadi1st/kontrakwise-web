@@ -2,7 +2,7 @@ import { Handle, Position, useReactFlow } from "@xyflow/react"
 import type { NodeProps, Node } from "@xyflow/react";
 import { Split, Settings } from "lucide-react";
 import { useCallback } from 'react';
-import { CustomNodeType, BaseNodeData } from "./index";
+import { BaseNodeData } from "./index";
 
 export type DecisionNodeData = BaseNodeData & {
     description?: string;

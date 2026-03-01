@@ -3,13 +3,17 @@ import { useCallback } from 'react';
 import {
     ReactFlow, applyNodeChanges, applyEdgeChanges,
     addEdge, Background, useReactFlow, ReactFlowProvider,
-    useNodesState, useEdgesState,
+    useNodesState, useEdgesState, Connection,
 } from '@xyflow/react';
 import { NODE_LIST, NodeInterface } from './Drawer/constant';
 import { uuidv7 } from 'uuidv7';
+import { initialEdges } from './Edges';
 import { DynamicIcon } from 'lucide-react/dynamic';
 import '@xyflow/react/dist/style.css';
-import { initialNodes, nodeTypes } from './Nodes';
+import { CustomNodeType, initialNodes, nodeTypes } from './Nodes';
+import { Button } from '../ui/button';
+import { Play } from 'lucide-react'
+import { toast } from 'sonner';
 
 function AIComponentPageWrapper() {
     return (
@@ -21,21 +25,130 @@ function AIComponentPageWrapper() {
 
 function AIComponentPage() {
     const [nodes, setNodes] = useNodesState(initialNodes);
-    const [edges, setEdges] = useEdgesState([]);
+    const [edges, setEdges] = useEdgesState(initialEdges);
     const { screenToFlowPosition, updateNodeData } = useReactFlow();
     const nodeCategories = NODE_LIST();
 
+    const executeFlow = async () => {
+        console.log('Executing flow...');
+        console.log('Current nodes:', nodes);
+        console.log('Current edges:', edges);
+
+        // Find the trigger node (start point)
+        const triggerNode = nodes.find(n => n.type === 'trigger');
+        if (!triggerNode) {
+            toast.error('No trigger starting point found', {
+                style: {
+                    backgroundColor: '#CB3A31',
+                    color: '#ffffff',
+                    borderColor: '#CB3A31',
+                }
+            });
+            return;
+        }
+
+        // Get connected nodes from trigger
+        const connectedEdges = edges.filter(e => e.source === triggerNode.id);
+
+        if (connectedEdges.length === 0) {
+            toast.error('No nodes connected to trigger', {
+                style: {
+                    backgroundColor: '#CB3A31',
+                    color: '#ffffff',
+                    borderColor: '#CB3A31',
+                }
+            });
+            return;
+        }
+
+        // Execute the workflow step by step
+        for (const edge of connectedEdges) {
+            const targetNode = nodes.find(n => n.id === edge.target);
+            if (!targetNode) continue;
+
+            // Check if node has execute method and call it
+            if (targetNode.data && 'execute' in targetNode.data && targetNode.data.execute) {
+                try {
+                    console.log(`Executing node: ${targetNode.type} (${targetNode.id})`);
+                    const result = await (targetNode.data as CustomNodeType).execute()
+
+                    // Check if result is an Error object
+                    if (result instanceof Error) {
+                        console.error(`Node ${targetNode.id} returned an error:`, result);
+                        toast.error(`Error in ${targetNode.type} node: ${result.message}`, {
+                            style: {
+                                backgroundColor: '#CB3A31',
+                                color: '#ffffff',
+                                borderColor: '#CB3A31',
+                            }
+                        });
+                        break; // Stop the flow
+                    }
+                    if (!result) {
+                        continue; // Stop the flow
+                    }
+
+                    // Find connected nodes and pass the result
+                    const outputEdges = edges.filter(e => e.source === targetNode.id);
+                    for (const outputEdge of outputEdges) {
+                        const nextNode = nodes.find(n => n.id === outputEdge.target);
+                        if (nextNode) {
+                            updateNodeData(nextNode.id, { input: result });
+                            console.log(`Passed output to ${nextNode.type} (${nextNode.id})`);
+                        }
+                    }
+                } catch (error) {
+                    console.error(`Error executing node ${targetNode.id}:`, error);
+                    toast.error(`Error in ${targetNode.type} node`, {
+                        style: {
+                            backgroundColor: '#CB3A31',
+                            color: '#ffffff',
+                            borderColor: '#CB3A31',
+                        }
+                    });
+                }
+            } else {
+                console.log(`Node ${targetNode.type} (${targetNode.id}) has no execute method`);
+            }
+        }
+
+        console.log('Flow execution completed');
+    };
+
     const onNodesChange = useCallback(
-        (changes) => setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot)),
+        (changes: any) => {
+            setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot))
+        },
         [],
     );
     const onEdgesChange = useCallback(
-        (changes) => setEdges((edgesSnapshot) => applyEdgeChanges(changes, edgesSnapshot)),
+        (changes: any) => setEdges((edgesSnapshot) => applyEdgeChanges(changes, edgesSnapshot)),
         [],
     );
     const onConnect = useCallback(
-        (params) => setEdges((edgesSnapshot) => addEdge(params, edgesSnapshot)),
-        [],
+        (params: Connection) => {
+            console.log("Connection made:", params);
+            setEdges((edgesSnapshot) => {
+                const newEdges = addEdge(params, edgesSnapshot);
+
+                // Update target node with source node's output
+                if (params.target && params.source) {
+                    // Find the source node
+                    const sourceNode = nodes.find(n => n.id === params.source);
+                    console.log("Source node:", sourceNode);
+
+                    if (sourceNode && 'output' in sourceNode.data && sourceNode.data.output) {
+                        // Update the target node directly
+                        updateNodeData(params.target, {
+                            input: sourceNode.data.output
+                        });
+                    }
+                }
+
+                return newEdges;
+            });
+        },
+        [nodes, updateNodeData],
     );
 
     const onDragStart = (event: React.DragEvent, nodeType: NodeInterface) => {
@@ -69,11 +182,11 @@ function AIComponentPage() {
                 type: jsonType.type,
                 position,
                 data: {
-                    label: jsonType.label,
+                    input: null
                 },
                 ...(jsonType.width && { width: jsonType.width }),
             };
-            setNodes((nds) => nds.concat(newNode));
+            setNodes((nds) => nds.concat(newNode as any));
         },
         [setNodes, screenToFlowPosition],
     );
@@ -132,6 +245,18 @@ function AIComponentPage() {
                     color="#a5daf5"
                 />
             </ReactFlow>
+
+            <Button
+                onClick={executeFlow}
+                className='fixed z-1 cursor-pointer bg-primary-surface text-primary border border-primary-border rounded-full p-4 z-1 hover:text-white'
+                style={{
+                    bottom: 30,
+                    right: 20,
+                }}
+            >
+                <Play size={10} />
+                Run Flow
+            </Button>
         </div >
     );
 }

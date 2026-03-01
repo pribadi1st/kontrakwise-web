@@ -7,7 +7,6 @@ import { DocumentNodeComponent, DocumentNodeData } from "./documentNode";
 import { AiAnalyzeNodeComponent, AiAnalyzeNodeData } from "./aiAnalyzeNode";
 import { DecisionNodeComponent, DecisionNodeData } from "./decisionNode";
 import { ExtractDocumentNodeComponent, ExtractDocumentNodeData } from "./extractDocumentNode";
-import { uuidv7 } from 'uuidv7'
 
 export const initialNodes = [
     {
@@ -23,7 +22,8 @@ export const initialNodes = [
         position: { x: -30, y: 250 },
         type: "document",
         data: {
-            label: 'Document Selection'
+            selectedDocument: null,
+            output: null
         },
         width: 300
     }
@@ -41,6 +41,9 @@ export const nodeTypes = {
 
 export type BaseNodeData = {
     label: string;
+    status: string;
+    execute: () => Promise<null | Error>;
+    output: any
 }
 
 // Append the types of you custom edges to the BuiltInNode type
@@ -49,4 +52,4 @@ export type BaseNodeData = {
 //     data: BaseNodeData;
 // } 
 
-export type CustomNodeType = BuiltInNode | DocumentNodeData | DecisionNodeData | AiAnalyzeNodeData | ExtractDocumentNodeData
+export type CustomNodeType = BuiltInNode & BaseNodeData | DocumentNodeData | DecisionNodeData | AiAnalyzeNodeData | ExtractDocumentNodeData
