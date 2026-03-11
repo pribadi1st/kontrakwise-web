@@ -4,16 +4,18 @@ import {
     ReactFlow, applyNodeChanges, applyEdgeChanges,
     addEdge, Background, useReactFlow, ReactFlowProvider,
     useNodesState, useEdgesState, Connection,
+    MarkerType,
 } from '@xyflow/react';
 import { NODE_LIST, NodeInterface } from './Drawer/constant';
 import { uuidv7 } from 'uuidv7';
-import { initialEdges } from './Edges';
+import { initialEdges, edgeTypes } from './Edges';
 import { DynamicIcon } from 'lucide-react/dynamic';
 import '@xyflow/react/dist/style.css';
 import { CustomNodeType, initialNodes, nodeTypes } from './Nodes';
 import { Button } from '../ui/button';
 import { Play } from 'lucide-react'
 import { toast } from 'sonner';
+import { errorToast } from '@/utils/functionHelper/toastHelper';
 
 function AIComponentPageWrapper() {
     return (
@@ -30,20 +32,10 @@ function AIComponentPage() {
     const nodeCategories = NODE_LIST();
 
     const executeFlow = async () => {
-        console.log('Executing flow...');
-        console.log('Current nodes:', nodes);
-        console.log('Current edges:', edges);
-
         // Find the trigger node (start point)
         const triggerNode = nodes.find(n => n.type === 'trigger');
         if (!triggerNode) {
-            toast.error('No trigger starting point found', {
-                style: {
-                    backgroundColor: '#CB3A31',
-                    color: '#ffffff',
-                    borderColor: '#CB3A31',
-                }
-            });
+            errorToast('No trigger starting point found')
             return;
         }
 
@@ -51,64 +43,74 @@ function AIComponentPage() {
         const connectedEdges = edges.filter(e => e.source === triggerNode.id);
 
         if (connectedEdges.length === 0) {
-            toast.error('No nodes connected to trigger', {
-                style: {
-                    backgroundColor: '#CB3A31',
-                    color: '#ffffff',
-                    borderColor: '#CB3A31',
-                }
-            });
+            errorToast('No nodes connected to trigger')
             return;
         }
 
-        // Execute the workflow step by step
-        for (const edge of connectedEdges) {
-            const targetNode = nodes.find(n => n.id === edge.target);
-            if (!targetNode) continue;
+        // Execute the workflow step by step - traverse the entire graph
+        console.log("Starting workflow execution...")
+        let nodesToProcess = connectedEdges.map(edge => nodes.find(n => n.id === edge.target)).filter(Boolean);
+
+        while (nodesToProcess.length > 0) {
+            const currentNode = nodesToProcess.shift()!;
+            if (!currentNode) continue;
+
+            // Find outgoing edges from this node first to determine connections
+            let outputEdges = edges.filter(e => e.source === currentNode.id);
 
             // Check if node has execute method and call it
-            if (targetNode.data && 'execute' in targetNode.data && targetNode.data.execute) {
+            if (currentNode.data && 'execute' in currentNode.data && currentNode.data.execute) {
                 try {
-                    console.log(`Executing node: ${targetNode.type} (${targetNode.id})`);
-                    const result = await (targetNode.data as CustomNodeType).execute()
+                    const result = await (currentNode.data.execute as () => Promise<null | Error>)();
 
-                    // Check if result is an Error object
                     if (result instanceof Error) {
-                        console.error(`Node ${targetNode.id} returned an error:`, result);
-                        toast.error(`Error in ${targetNode.type} node: ${result.message}`, {
-                            style: {
-                                backgroundColor: '#CB3A31',
-                                color: '#ffffff',
-                                borderColor: '#CB3A31',
-                            }
-                        });
-                        break; // Stop the flow
-                    }
-                    if (!result) {
-                        continue; // Stop the flow
+                        errorToast(`Node ${currentNode.id} execution failed: ${result.message}`)
+                        continue;
                     }
 
-                    // Find connected nodes and pass the result
-                    const outputEdges = edges.filter(e => e.source === targetNode.id);
+                    // For decision nodes, filter edges based on decision result
+                    if (currentNode.type === 'decision' || currentNode.type === 'ai-decision') {
+                        const decisionResult = (result as any)?.decision as string;
+                        const targetHandle = decisionResult ? 'decision-true' : 'decision-false';
+                        outputEdges = outputEdges.filter(e => e.sourceHandle === targetHandle);
+                    }
+
+                    // Pass output to connected nodes and add them to processing queue
                     for (const outputEdge of outputEdges) {
                         const nextNode = nodes.find(n => n.id === outputEdge.target);
                         if (nextNode) {
-                            updateNodeData(nextNode.id, { input: result });
-                            console.log(`Passed output to ${nextNode.type} (${nextNode.id})`);
+                            console.log("============")
+                            console.log("has result")
+                            console.log("result", result)
+                            console.log("============")
+                            if (result) {
+                                // Update the node data immediately
+                                updateNodeData(nextNode.id, { input: result });
+
+                                // Add a small delay to ensure React Flow processes the state update
+                                await new Promise(resolve => setTimeout(resolve, 100));
+
+                                // Get the updated node data to ensure input is set
+                                const updatedNode = nodes.find(n => n.id === nextNode.id);
+                                if (updatedNode && updatedNode.data.input) {
+                                    console.log("Input successfully passed to node:", nextNode.id);
+                                } else {
+                                    console.warn("Failed to pass input to node:", nextNode.id);
+                                }
+                            }
+
+                            // Add to processing queue if not already there
+                            if (!nodesToProcess.some(n => n.id === nextNode.id)) {
+                                nodesToProcess.push(nextNode);
+                            }
                         }
                     }
+                    console.log(currentNode)
                 } catch (error) {
-                    console.error(`Error executing node ${targetNode.id}:`, error);
-                    toast.error(`Error in ${targetNode.type} node`, {
-                        style: {
-                            backgroundColor: '#CB3A31',
-                            color: '#ffffff',
-                            borderColor: '#CB3A31',
-                        }
-                    });
+                    errorToast(`Error in ${currentNode.type} node`)
                 }
             } else {
-                console.log(`Node ${targetNode.type} (${targetNode.id}) has no execute method`);
+                console.log(`Node ${currentNode.type} (${currentNode.id}) has no execute method`);
             }
         }
 
@@ -129,7 +131,13 @@ function AIComponentPage() {
         (params: Connection) => {
             console.log("Connection made:", params);
             setEdges((edgesSnapshot) => {
-                const newEdges = addEdge(params, edgesSnapshot);
+                // Create new edge - you can choose 'default' (solid) or 'dashed' (dashed)
+                const newEdge = {
+                    ...params,
+                    id: `${params.source}-${params.target}-${Date.now()}`,
+                    type: 'normal', // Use 'dashed' for dashed, 'default' for solid
+                };
+
 
                 // Update target node with source node's output
                 if (params.target && params.source) {
@@ -143,7 +151,13 @@ function AIComponentPage() {
                             input: sourceNode.data.output
                         });
                     }
+
+                    if (sourceNode?.type.includes('decision')) {
+                        newEdge.type = 'dashed-arrow'
+                    }
                 }
+
+                const newEdges = addEdge(newEdge, edgesSnapshot);
 
                 return newEdges;
             });
@@ -182,7 +196,37 @@ function AIComponentPage() {
                 type: jsonType.type,
                 position,
                 data: {
-                    input: null
+                    label: jsonType.label,
+                    status: 'idle',
+                    execute: null,
+                    output: null,
+                    input: null,
+                    // Add default values for AI Decision nodes
+                    ...(jsonType.type === 'ai-decision' && {
+                        conditionType: 'risk_score',
+                        conditionConfig: {
+                            operator: 'gt',
+                            value: 5,
+                            riskLevel: 'Medium',
+                            ruleName: ''
+                        },
+                        trueLabel: 'True',
+                        falseLabel: 'False',
+                        description: ''
+                    }),
+                    // Add default values for Action nodes
+                    ...(jsonType.type === 'action' && {
+                        actionType: 'manual_review',
+                        actionConfig: {
+                            message: '',
+                            recipients: [],
+                            priority: 'medium',
+                            assignee: '',
+                            dueDate: '',
+                            tags: []
+                        },
+                        description: ''
+                    })
                 },
                 ...(jsonType.width && { width: jsonType.width }),
             };
@@ -232,12 +276,23 @@ function AIComponentPage() {
                 nodes={nodes}
                 edges={edges}
                 nodeTypes={nodeTypes}
+                edgeTypes={edgeTypes}
                 onNodesChange={onNodesChange}
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
                 onDrop={onDrop}
                 onDragOver={onDragOver}
                 fitView
+                defaultEdgeOptions={{
+                    style: { strokeWidth: 2, stroke: '#b1b1b7' },
+                    type: 'smoothstep',
+                    animated: true,
+                    markerEnd: {
+                        type: MarkerType.ArrowClosed,
+                        color: '#b1b1b7',
+                    },
+                }}
+                connectionLineStyle={{ stroke: '#b1b1b7', strokeWidth: 2 }}
             >
                 <Background
                     size={10}

@@ -6,7 +6,7 @@ export function useStreamingChat(documentId: number) {
     const [messages, setMessages] = useState<Message[]>([
         {
             id: '1',
-            text: 'Hello! I\'m your contract analysis assistant. I can help you understand this document, answer questions about specific clauses, identify potential risks, and explain legal terminology. What would you like to know?',
+            text: 'Hello! I\'m your contract analysis assistant. I can help you understand this document, answer questions about specific clauses, identify potential risks, and explain contract terminology. What would you like to know?',
             sender: 'bot',
             timestamp: new Date().toISOString()
         }
@@ -158,7 +158,7 @@ export function useStreamingChat(documentId: number) {
         setMessages([
             {
                 id: '1',
-                text: 'Hello! I\'m your contract analysis assistant. I can help you understand this document, answer questions about specific clauses, identify potential risks, and explain legal terminology. What would you like to know?',
+                text: 'Hello! I\'m your contract analysis assistant. I can help you understand this document, answer questions about specific clauses, identify potential risks, and explain contract terminology. What would you like to know?',
                 sender: 'bot',
                 timestamp: new Date().toISOString()
             }

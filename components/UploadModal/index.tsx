@@ -90,7 +90,7 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
             Upload Contracts
           </DialogTitle>
           <DialogDescription className="text-gray-500 text-sm">
-            Add your legal documents for AI-powered analysis.
+            Add your contract documents for AI-powered analysis.
           </DialogDescription>
         </DialogHeader>
 

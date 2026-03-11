@@ -18,7 +18,7 @@ export default function AuthLayout({ children, title, subtitle, showMobileLogo =
       <div className="hidden md:flex w-[40%] bg-text-main relative flex-col justify-between p-12 text-white">
         <div className="absolute inset-0 z-0">
           <Image
-            alt="Legal Abstract Background"
+            alt="Contract Abstract Background"
             fill
             className="object-cover opacity-40 mix-blend-overlay"
             src="https://lh3.googleusercontent.com/aida-public/AB6AXuDXhk7BuAan7XNPLUEjsQC4vzvDKQ3fLZjRJ6YhEvMv_HHHCdWYRPmsnzXNV1xx7keulY8QNFIMrBsGxqCZrL-OSvsKy89OlodROfQEqqfJx_Ii9YvuuBOwWgXczUDjUYFvuvlPTDfy1Vp0Dn0adNfeAQ0nCOWuw4sd8PtdnJ1lYvKtO-XamhfoKZ-ooVY84WXu15tfbaBShcW4GyWATXFYvUQr32l9nN7fobl-eYilD10J5UF1hNVrNFSD9U7X6iGnw1VZYhiTwSw"
@@ -40,7 +40,7 @@ export default function AuthLayout({ children, title, subtitle, showMobileLogo =
             <span className="text-primary">Machine Speed</span>.
           </h2>
           <p className="text-white/70 text-lg max-w-md font-light">
-            Join over 5,000 legal professionals using our AI to reduce risk and accelerate document review cycles by 80%.
+            Join over 5,000 contract professionals using our AI to reduce risk and accelerate document review cycles by 80%.
           </p>
 
           <div className="mt-12 flex items-center gap-4">

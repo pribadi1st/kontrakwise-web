@@ -10,7 +10,7 @@ export default function Hero() {
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold mb-6 tracking-wide uppercase">
               <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse"></span>
-              Trusted by 500+ Legal Firms
+              Trusted by 500+ Contract Management Teams
             </div>
 
             <h1 className="text-5xl lg:text-6xl font-extrabold text-slate-900 dark:text-white leading-[1.15] mb-6">
@@ -19,7 +19,7 @@ export default function Hero() {
             </h1>
 
             <p className="text-xl text-slate-600 dark:text-slate-400 mb-10 leading-relaxed">
-              Empower your legal team with instant risk detection and automated document comparison. Save hours of manual review and focus on high-value strategy.
+              Empower your contract team with instant risk detection and automated document comparison. Save hours of manual review and focus on high-value strategy.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
@@ -37,7 +37,7 @@ export default function Hero() {
                 <img className="w-10 h-10 rounded-full border-2 border-white dark:border-background-dark object-cover" alt="User profile avatar 2" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBe4WBMcDmFOZcIaXC5zPvlxQhUBSoc_UbY8yGuea9ogPEMGdusR1Y7-YzKlkgzTU1BaNfKvUnqR02hKTrmfKq5Ibj_z8UW1s3gsOSpbnsEcSRF2JZvon8XLVF5SiF2EYVH11pAC4GL2QWxmV6smor7BUgzpK7mtmfvRx7eNHaBsLCVtoXtuVIqB82FTghtnbw3wYeXjnk3t2AUGC_ghBo_xGGPX_r8k-Rc7IX9F_bemiqGgrnHxTW1wcdVWX1lsxrL_0kHKxy-GVo" />
                 <img className="w-10 h-10 rounded-full border-2 border-white dark:border-background-dark object-cover" alt="User profile avatar 3" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1spXByQsrOtQoe0q3WtBC3fZIuJONGt2Y2U1oD51AXg8m91VDEj08qs_aDEZ3hJc9TTZ7ZUqgRkdgTsXcSH_BWXAlSMvzlndJJuIWik6PQmR2ciqZNlU9hLpQ9DSFP59CDAfQP01DHTLSfiJmTWeAZC8ixOMBXb48upqyjhGBF9vrSrGwHJQLBmoVkcC0_xteMLoU_96AUJz2iV-4NEnYzaNs-RVaYu3apFLwgX2__EIkkNEuRypSSaPysH3XL3wkyOq71jCt5ag" />
               </div>
-              <p className="text-sm font-medium">Join <span className="text-slate-900 dark:text-white font-bold">12,000+</span> legal professionals</p>
+              <p className="text-sm font-medium">Join <span className="text-slate-900 dark:text-white font-bold">12,000+</span> contract professionals</p>
             </div>
           </div>
 
@@ -50,7 +50,7 @@ export default function Hero() {
                   <div className="w-3 h-3 rounded-full bg-amber-400"></div>
                   <div className="w-3 h-3 rounded-full bg-emerald-400"></div>
                 </div>
-                <div className="text-xs font-bold text-slate-400 tracking-wider">LEGAL-DASHBOARD-V2</div>
+                <div className="text-xs font-bold text-slate-400 tracking-wider">KONTRAKWISE-DASHBOARD-V2</div>
               </div>
 
               <div className="p-6">

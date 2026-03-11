@@ -1,12 +1,15 @@
 import { Handle, Position, useReactFlow } from "@xyflow/react"
 import type { NodeProps, Node } from "@xyflow/react";
-import { Brain, PlayIcon, Settings } from "lucide-react";
+import { Brain, Loader2, PlayIcon, Settings } from "lucide-react";
 import React, { useCallback, useState } from 'react';
 import { BaseNodeData } from "./index";
 import { AIAnalyzeDrawer } from '../Drawer/AIAnalyzeDrawer';
-import { AIAnalyzeType, AIRule } from "@/types/aiAnalyze";
+import { AIAnalyzeForm, AIAnalyzeResult, AIAnalyzeType, AIRule } from "@/types/aiAnalyze";
 import { Document } from "@/types/document";
 import { getNodeBorderColor } from "@/utils/reactNode/progressState";
+import { useMutation } from "@tanstack/react-query";
+import { doAnalyzeDocument } from "@/utils/queries/document/analysis";
+import { errorToast } from "@/utils/functionHelper/toastHelper";
 
 export type AiAnalyzeNodeData = BaseNodeData & {
     description?: string;
@@ -14,6 +17,7 @@ export type AiAnalyzeNodeData = BaseNodeData & {
     prompt?: string;
     rules?: AIRule[];
     input: Document;
+    output: AIAnalyzeResult
 }
 
 export type AiAnalyzeNode = Node<AiAnalyzeNodeData>
@@ -21,7 +25,10 @@ export type AiAnalyzeNode = Node<AiAnalyzeNodeData>
 export function AiAnalyzeNodeComponent({ id, data, isConnectable }: NodeProps<AiAnalyzeNode>) {
     const { updateNodeData, getNode } = useReactFlow();
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-
+    const { mutateAsync, isPending } = useMutation({
+        mutationKey: ["analyze-document"],
+        mutationFn: (formData: AIAnalyzeForm) => doAnalyzeDocument(data.input.id, formData)
+    })
     const handleSettingsClick = useCallback(() => {
         setIsDrawerOpen(true);
     }, []);
@@ -40,39 +47,38 @@ export function AiAnalyzeNodeComponent({ id, data, isConnectable }: NodeProps<Ai
         updateNodeData(id, { status: 'loading' });
 
         if (!currentData.input) {
-            console.warn('No document input to execute AI analysis');
             updateNodeData(id, { status: 'failed' });
+            errorToast('No document input for AI analysis')
             return new Error('no document input for AI analysis');
         }
 
         if (!currentData.analysisType) {
-            console.warn('No analysis type configured');
             updateNodeData(id, { status: 'failed' });
+            errorToast('No analysis type configured');
             return new Error('no analysis type configured');
         }
 
         try {
-            // TODO: Implement actual AI analysis logic here
-            console.log('Executing AI analysis with:', {
-                document: currentData.input.filename,
-                type: currentData.analysisType.value,
-                prompt: currentData.prompt,
-                rules: currentData.rules?.length || 0
-            });
+            const resp = await mutateAsync({
+                analysisType: currentData.analysisType,
+                customPrompt: currentData.prompt || null,
+                analysisRule: currentData.rules || []
+            })
 
-            // Simulate AI processing
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            // For now, just pass through the document as output
-            // In real implementation, this would be the analysis result
+            if (!resp) {
+                updateNodeData(id, { status: 'failed' });
+                errorToast('AI analysis failed');
+                return new Error('AI analysis failed');
+            }
+            // Pass the analysis result as output
             updateNodeData(id, {
-                output: currentData.input,
+                output: resp,
                 status: 'success'
             });
 
-            return null;
+            return resp;
         } catch (error) {
-            console.error('AI analysis failed:', error);
+            errorToast(`AI analysis failed: ${error}`);
             updateNodeData(id, { status: 'failed' });
             return error as Error;
         }
@@ -85,8 +91,8 @@ export function AiAnalyzeNodeComponent({ id, data, isConnectable }: NodeProps<Ai
         }
     }, [id, data.execute, updateNodeData]);
 
-    const analyzeData = () => {
-        console.log("analyzeData")
+    const analyzeData = async () => {
+        await execute()
     }
 
     const handleSave = (nodeId: string, newData: Partial<AiAnalyzeNodeData>) => {
@@ -101,7 +107,11 @@ export function AiAnalyzeNodeComponent({ id, data, isConnectable }: NodeProps<Ai
                     <div className="font-medium text-sm">AI Analyze</div>
                 </div>
                 <div className="flex-center gap-2">
-                    <PlayIcon size={16} className="cursor-pointer text-warning" fill="#FAAD14" onClick={analyzeData} />
+                    {isPending ?
+                        <Loader2 size={16} className="animate-spin cursor-pointer text-warning" />
+                        :
+                        <PlayIcon size={16} className="cursor-pointer text-warning" fill="#FAAD14" onClick={analyzeData} />
+                    }
                     <Settings className="text-primary cursor-pointer" size={16} onClick={handleSettingsClick} />
                 </div>
             </div>

@@ -7,6 +7,8 @@ import { DocumentNodeComponent, DocumentNodeData } from "./documentNode";
 import { AiAnalyzeNodeComponent, AiAnalyzeNodeData } from "./aiAnalyzeNode";
 import { DecisionNodeComponent, DecisionNodeData } from "./decisionNode";
 import { ExtractDocumentNodeComponent, ExtractDocumentNodeData } from "./extractDocumentNode";
+import { AIDecisionNodeComponent, AIDecisionNodeData } from "./aiDecisionNode";
+import { ActionNodeComponent, ActionNodeData } from "./actionNode";
 
 export const initialNodes = [
     {
@@ -14,7 +16,11 @@ export const initialNodes = [
         position: { x: 0, y: 0 },
         type: "trigger",
         data: {
-            label: 'Start'
+            label: 'Start',
+            status: 'idle',
+            execute: null,
+            output: null,
+            input: null
         }
     },
     {
@@ -23,13 +29,17 @@ export const initialNodes = [
         type: "document",
         data: {
             selectedDocument: null,
-            output: null
+            output: null,
+            input: null,
+            status: 'idle',
+            execute: null,
+            label: 'Document Selection'
         },
         width: 300
     }
 ] satisfies Node[];
 
-export type CustomType = "group" | "input" | "output" | "default" | "trigger" | "document" | "ai-analyze" | "decision" | "extract-document";
+export type CustomType = "group" | "input" | "output" | "default" | "trigger" | "document" | "ai-analyze" | "decision" | "extract-document" | "ai-decision" | "action";
 
 export const nodeTypes = {
     "trigger": TriggerNodeComponent,
@@ -37,13 +47,16 @@ export const nodeTypes = {
     "ai-analyze": AiAnalyzeNodeComponent,
     "decision": DecisionNodeComponent,
     "extract-document": ExtractDocumentNodeComponent,
+    "ai-decision": AIDecisionNodeComponent,
+    "action": ActionNodeComponent,
 } satisfies NodeTypes;
 
 export type BaseNodeData = {
     label: string;
     status: string;
-    execute: () => Promise<null | Error>;
-    output: any
+    execute: (() => Promise<null | Error>) | null;
+    output: any;
+    input: any;
 }
 
 // Append the types of you custom edges to the BuiltInNode type
@@ -52,4 +65,4 @@ export type BaseNodeData = {
 //     data: BaseNodeData;
 // } 
 
-export type CustomNodeType = BuiltInNode & BaseNodeData | DocumentNodeData | DecisionNodeData | AiAnalyzeNodeData | ExtractDocumentNodeData
+export type CustomNodeType = BuiltInNode & BaseNodeData | DocumentNodeData | DecisionNodeData | AiAnalyzeNodeData | ExtractDocumentNodeData | AIDecisionNodeData | ActionNodeData

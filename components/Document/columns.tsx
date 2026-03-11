@@ -110,8 +110,8 @@ export function getDocumentColumns(): ColumnDef<Document>[] {
                 const doc = row.original
                 return (
                     <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded ${doc.riskLevel === 'high' ? 'bg-red-50' : 'bg-blue-100'}`}>
-                            {getFileIcon(doc.type || '', doc.riskLevel || '')}
+                        <div className={`p-2 rounded ${doc.risk_level === 'high' ? 'bg-red-50' : 'bg-blue-100'}`}>
+                            {getFileIcon(doc.type || '', doc.risk_level || '')}
                         </div>
                         <div>
                             <Link href={`/documents/${doc.id}`}>
@@ -138,8 +138,9 @@ export function getDocumentColumns(): ColumnDef<Document>[] {
             accessorKey: "ai_progress",
             header: "Document processing",
             cell: ({ row }) => {
-                const { ai_progress } = row.original
+                const { ai_progress, id } = row.original
                 const progress = ai_progress?.toLowerCase() || 'pending'
+                const isNotSummarized = progress !== 'summarized'
 
                 const getProgressColor = (status: string) => {
                     switch (status) {
@@ -168,6 +169,38 @@ export function getDocumentColumns(): ColumnDef<Document>[] {
                             return <Clock size={16} className="text-gray-500" />
                     }
                 }
+                const { mutateAsync, isPending } = useMutation({
+                    mutationFn: async () => {
+                        const token = localStorage.getItem('bearer_token')
+                        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}documents/${id}/sync`, {
+                            method: 'GET',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                            }
+                        })
+                        if (!response.ok) {
+                            throw new Error('Failed to refresh document')
+                        }
+                        return response.json()
+                    }
+                })
+
+                const handleRefresh = async () => {
+                    try {
+                        const response = await mutateAsync()
+
+                        if (!response.ok) {
+                            throw new Error('Failed to refresh document')
+                        }
+
+                        toast.success('Document refresh initiated')
+                        // Refresh the documents list
+                        setTimeout(() => window.location.reload(), 1000)
+                    } catch (error) {
+                        toast.error('Failed to refresh document')
+                        console.error('Refresh error:', error)
+                    }
+                }
 
                 return (
                     <div className="flex items-center gap-2">
@@ -175,6 +208,23 @@ export function getDocumentColumns(): ColumnDef<Document>[] {
                         <span className={`text-xs px-2 py-1 rounded-full border ${getProgressColor(progress)}`}>
                             {progress.charAt(0).toUpperCase() + progress.slice(1)}
                         </span>
+                        {isNotSummarized && (
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <button
+                                        onClick={handleRefresh}
+                                        className="text-gray-400 hover:text-primary transition-colors"
+                                        title="Refresh document"
+                                        disabled={isPending}
+                                    >
+                                        <RefreshCw size={14} />
+                                    </button>
+                                </TooltipTrigger>
+                                <TooltipContent className='bg-primary [&_svg]:bg-primary [&_svg]:fill-primary text-white'>
+                                    <p>Refresh Document</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        )}
                     </div>
                 )
             }

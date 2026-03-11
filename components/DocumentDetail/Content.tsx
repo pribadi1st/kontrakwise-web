@@ -74,7 +74,7 @@ export default function DocumentDetailContent({ pdfBlob, isLoading, error }: Doc
                     {/* AI Analysis Section */}
                     <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                         <p className="text-sm text-blue-700">
-                            <strong>AI Analysis:</strong> This document is ready for contract analysis. Use chat assistant to ask questions about specific clauses, risks, or terms. The AI can help you understand legal terminology and identify potential issues.
+                            <strong>AI Analysis:</strong> This document is ready for contract analysis. Use chat assistant to ask questions about specific clauses, risks, or terms. The AI can help you understand contract terminology and identify potential issues.
                         </p>
                     </div>
                 </div>

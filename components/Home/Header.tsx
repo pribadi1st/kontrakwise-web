@@ -17,7 +17,7 @@ export default function Header() {
               <Gavel className="text-white text-2xl" size={24} />
             </div>
             <span className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-              Legal<span className="text-primary">AI</span>
+              Kontrak<span className="text-primary">wise</span>
             </span>
           </div>
 

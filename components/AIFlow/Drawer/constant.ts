@@ -77,6 +77,26 @@ export function NODE_LIST() {
                     icon: "split",
                     description: 'Make decisions based on conditions',
                     width: 300
+                },
+                {
+                    type: 'ai-decision',
+                    label: 'AI Risk Decision',
+                    icon: "git-branch",
+                    description: 'Make decisions based on AI analysis results',
+                    width: 300
+                }
+            ]
+        },
+        "actions": {
+            key: "actions",
+            label: "Actions",
+            nodes: [
+                {
+                    type: 'action',
+                    label: 'Action Node',
+                    icon: "play",
+                    description: 'Execute actions based on decisions',
+                    width: 300
                 }
             ]
         }

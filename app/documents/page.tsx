@@ -29,7 +29,7 @@ export default function DocumentsPage() {
                 <header className="h-20 border-b border-gray-200 bg-white flex items-center justify-between px-8 shrink-0 shadow-sm z-10">
                     <div className="flex flex-col">
                         <h2 className="text-gray-900 text-2xl font-bold">My Documents</h2>
-                        <p className="text-gray-500 text-sm">Manage and review your legal agreements</p>
+                        <p className="text-gray-500 text-sm">Manage and review your contract agreements</p>
                         {!!documents}
                     </div>
                     <div className="flex items-center gap-4">

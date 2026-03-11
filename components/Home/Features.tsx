@@ -8,8 +8,8 @@ export default function Features() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-20">
           <h2 className="text-xs font-bold text-primary tracking-widest uppercase mb-4">Powerful Features</h2>
-          <h3 className="text-4xl font-extrabold text-slate-900 dark:text-white mb-6">Smarter legal workflows, built for humans.</h3>
-          <p className="text-lg text-slate-600 dark:text-slate-400">Our suite of AI-driven tools handles the tedious documentation so your team can focus on the law.</p>
+          <h3 className="text-4xl font-extrabold text-slate-900 dark:text-white mb-6">Smarter contract workflows, built for humans.</h3>
+          <p className="text-lg text-slate-600 dark:text-slate-400">Our suite of AI-driven tools handles the tedious documentation so your team can focus on what matters most.</p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8">
